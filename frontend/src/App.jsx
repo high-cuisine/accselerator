@@ -126,6 +126,13 @@ const chartDataset = {
 };
 
 export default function App() {
+  // Аутентификация
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('isAuthenticated') === 'true';
+  });
+  const [loginError, setLoginError] = useState('');
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedSeverity, setSelectedSeverity] = useState('all');
   const [selectedVuln, setSelectedVuln] = useState(vulnData[0]);
@@ -343,6 +350,87 @@ export default function App() {
     return logEntries.filter((log) => log.severity === selectedSeverity);
   }, [selectedSeverity]);
 
+  // Функция входа
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+
+    if (loginForm.username === 'admin' && loginForm.password === 'admin') {
+      setIsAuthenticated(true);
+      localStorage.setItem('isAuthenticated', 'true');
+    } else {
+      setLoginError('Неверный логин или пароль');
+    }
+  };
+
+  // Функция выхода
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('isAuthenticated');
+    setLoginForm({ username: '', password: '' });
+  };
+
+  // Если не авторизован, показываем страницу логина
+  if (!isAuthenticated) {
+    return (
+      <div className="login-page">
+        <div className="login-container glass">
+          <div className="login-header">
+            <div className="login-logo">
+              <div className="pulse" />
+              <span>Sinep</span>
+            </div>
+            <h2>Вход в систему</h2>
+            <p className="muted">Введите учетные данные для доступа</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="login-form">
+            {loginError && (
+              <div className="login-error">
+                {loginError}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="username">Логин</label>
+              <input
+                id="username"
+                type="text"
+                placeholder="Введите логин"
+                value={loginForm.username}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, username: e.target.value })
+                }
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="password">Пароль</label>
+              <input
+                id="password"
+                type="password"
+                placeholder="Введите пароль"
+                value={loginForm.password}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, password: e.target.value })
+                }
+                required
+              />
+            </div>
+
+            <button type="submit" className="login-button">
+              Войти
+            </button>
+          </form>
+
+          
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="layout">
       <aside className="sidebar glass">
@@ -364,6 +452,9 @@ export default function App() {
         <div className="sidebar-footer">
           <p>Статус сканера</p>
           <span className="status online">online</span>
+          <button className="logout-button" onClick={handleLogout} title="Выйти">
+            Выйти
+          </button>
         </div>
       </aside>
 
