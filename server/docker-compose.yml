@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  server:
+    container_name: security-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-4004}:4004"
+    restart: unless-stopped
+    networks:
+      - security-net
+
+networks:
+  security-net:
+    driver: bridge
+
