@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: log-reader-client
+    environment:
+      - LOGS_PATH=/app/logs
+      - NODE_ENV=production
+      - SERVER_URL=${SERVER_URL:-http://server:3000}
+      - BATCH_SIZE=${BATCH_SIZE:-100}
+      - WATCH_INTERVAL=${WATCH_INTERVAL:-5000}
+      - PORT=3001
+    volumes:
+      - ${LOGS_PATH:-./logs}:/app/logs:ro
+    ports:
+      - "3001:3001"
+    depends_on:
+      - server
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    container_name: log-analysis-server
+    environment:
+      - PORT=3000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
